@@ -1,40 +1,38 @@
 "use client"
 import { useForm } from 'react-hook-form';
-import { loginSchema } from '@/lib/validation/userSchema';
+import { signupSchema } from '@/lib/validation/userSchema';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useUserStore } from '@/store/userStore';
 
-type loginForm = z.infer<typeof loginSchema>
-
-type LoginResponse = {
-    user: {
+type SignupForm = z.infer<typeof signupSchema>
+type RegisterResponse = {
+    User: {
         userName: string;
         email: string;
     };
     message: string;
 };
 
-const Login = () => {
 
-    const setUser = useUserStore((state) => state.setUser);
-    const { register, handleSubmit, formState: { errors } } = useForm<loginForm>({
-        resolver: zodResolver(loginSchema)
-    });
+export default function SignUpPage() {
+    const setUser = useUserStore((state) => state.setUser)
 
-    const onSubmit = async (data: loginForm) => {
-        console.log(data);
+    const { register, handleSubmit, formState: { errors } } = useForm<SignupForm>({
+        resolver: zodResolver(signupSchema)
+    })
+
+    const onSubmit = async (data: SignupForm) => {
+        console.log(data)
         try {
-            const response = await fetch('/api/login', {
+            const response = await fetch('/api/register', {
                 method: 'POST',
                 body: JSON.stringify(data),
-                headers: { 'ContentType': 'application/json' }
-            });
-
-            const result: LoginResponse = await response.json();
-            console.log("result:", result)
+                headers: { 'Content-Type': 'application/json' }
+            })
+            const result: RegisterResponse = await response.json();
             if (response.ok) {
-                setUser({ userName: result.user.userName, email: result.user.email });
+                setUser({ userName: result.User.userName, email: result.User.email });
                 alert("Signup successfull")
             } else {
                 alert(result.message);
@@ -44,12 +42,21 @@ const Login = () => {
             alert("Something goes wrong")
         }
     }
-
     return (
         <>
             <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-xl shadow-md">
                 <h2 className="text-2xl font-bold mb-4 text-black">Sign Up</h2>
-                <form onSubmit={handleSubmit(onSubmit)} className='space-y-2'>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <div>
+                        <input
+                            type="text"
+                            placeholder="Name"
+                            {...register('userName')}
+                            className="w-full p-2 border rounded text-black"
+                        />
+                        {errors.userName && <p className="text-red-500">{errors.userName.message}</p>}
+                    </div>
+
                     <div>
                         <input
                             type="email"
@@ -76,8 +83,5 @@ const Login = () => {
                 </form>
             </div>
         </>
-    );
-
+    )
 }
-
-export default Login;

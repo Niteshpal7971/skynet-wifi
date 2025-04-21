@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
         await connect();
 
         const body = await request.json();
-        console.log("Received body:", body);
+
         const { userName, email, password } = body;
 
         if (!userName || !email || !password) {
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
             email,
             password: hashedPassword
         })
-        console.log(newUser)
+
         await newUser.save();
 
         return NextResponse.json(
