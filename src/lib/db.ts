@@ -21,14 +21,18 @@ export const connect = async () => {
 
         const connection = mongoose.connection;
 
-        connection.on('connected', () => {
-            console.log("MongoDB connected successfully")
-        });
+        if (connection.listeners("connected").length === 0) {
+            connection.on("connected", () => {
+                console.log("MongoDB connected successfully");
+            });
+        }
 
-        connection.on('error', (error) => {
-            console.log("MongoDB connection error: Please make sure MongoDb is running.", error);
-            process.exit();
-        })
+        if (connection.listeners("error").length === 0) {
+            connection.on("error", (error) => {
+                console.log("MongoDB connection error:", error);
+                process.exit();
+            });
+        }
     } catch (error) {
         console.log("Somethings went wrong!")
         console.error(error)

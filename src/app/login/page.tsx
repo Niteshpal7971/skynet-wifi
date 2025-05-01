@@ -4,6 +4,7 @@ import { loginSchema } from '@/lib/validation/userSchema';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useUserStore } from '@/store/userStore';
+import { useRouter } from 'next/navigation';
 
 type loginForm = z.infer<typeof loginSchema>
 
@@ -17,13 +18,14 @@ type LoginResponse = {
 
 const Login = () => {
 
+    const router = useRouter();
     const setUser = useUserStore((state) => state.setUser);
     const { register, handleSubmit, formState: { errors } } = useForm<loginForm>({
         resolver: zodResolver(loginSchema)
     });
 
     const onSubmit = async (data: loginForm) => {
-        console.log(data);
+        // console.log(data);
         try {
             const response = await fetch('/api/login', {
                 method: 'POST',
@@ -35,7 +37,8 @@ const Login = () => {
             console.log("result:", result)
             if (response.ok) {
                 setUser({ userName: result.user.userName, email: result.user.email });
-                alert("Signup successfull")
+                alert("Signup successfull");
+                router.push('/dashboard')
             } else {
                 alert(result.message);
             }
@@ -47,34 +50,44 @@ const Login = () => {
 
     return (
         <>
-            <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-xl shadow-md">
-                <h2 className="text-2xl font-bold mb-4 text-black">Sign Up</h2>
-                <form onSubmit={handleSubmit(onSubmit)} className='space-y-2'>
-                    <div>
-                        <input
-                            type="email"
-                            placeholder="Email"
-                            {...register('email')}
-                            className="w-full p-2 border rounded text-black"
-                        />
-                        {errors.email && <p className="text-red-500">{errors.email.message}</p>}
-                    </div>
+            <main className='min-h-screen flex justify-center items-center'>
+                <section className="w-1/4 flex flex-col justify-center items-center p-8 bg-white rounded-xl shadow-md">
+                    <h2 className="text-2xl font-bold mb-4 text-center text-black">Log in</h2>
+                    <form onSubmit={handleSubmit(onSubmit)} className='w-full space-y-4 flex flex-col items-center'>
+                        <div className='w-full'>
+                            <label className="sr-only" htmlFor="email">Email</label>
+                            <input
+                                type="email"
+                                id="email"
+                                placeholder="Email"
+                                {...register('email')}
+                                className="w-full p-2 border rounded text-black"
+                            />
+                            {errors.email && <p className="text-red-500">{errors.email.message}</p>}
+                        </div>
 
-                    <div>
-                        <input
-                            type="password"
-                            placeholder="Password"
-                            {...register('password')}
-                            className="w-full p-2 border rounded text-black"
-                        />
-                        {errors.password && <p className="text-red-500">{errors.password.message}</p>}
-                    </div>
+                        <div className='w-full'>
+                            <label className="sr-only" htmlFor="password">Email</label>
+                            <input
+                                type="password"
+                                id="password"
+                                placeholder='Password'
+                                {...register('password')}
+                                className="w-full p-2 border rounded text-black"
+                            />
+                            {errors.password && <p className="text-red-500">{errors.password.message}</p>}
+                        </div>
 
-                    <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
-                        Sign Up
-                    </button>
-                </form>
-            </div>
+                        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
+                            Login
+                        </button>
+                        <p className='text-center text-black'>
+                            Don&apos;t have an acoount?
+                            <span className='text-blue-500 cursor-pointer hover:underline' onClick={() => router.push('./signup')}>signup</span>
+                        </p>
+                    </form>
+                </section>
+            </main>
         </>
     );
 

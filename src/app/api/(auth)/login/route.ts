@@ -48,22 +48,50 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const token = jwt.sign(
-            {
-                id: user._id,
-                email: user.email,
-                userName: user.userName
+        if (!user.isVerified) {
+            return NextResponse.json({
+                success: false,
+                message: 'Please verify your email first'
             },
-            process.env.JWT_SECRET!,
+                { status: 401 }
+            )
+        }
+
+        const accessToken = jwt.sign({
+            id: user._id,
+            email: user.email,
+            userName: user.userName,
+            role: user.role
+        },
+            process.env.JWT_ACCESS_SECRET!,
+            { expiresIn: "1d" }
+        );
+
+        const refreshToken = jwt.sign({
+            id: user._id,
+        },
+            process.env.JWT_REFRESH_SECTRET!,
             { expiresIn: "7d" }
         );
 
-        (await cookies()).set('token', token, {
+
+        (await cookies()).set('accessToken', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
-            maxAge: 60 * 60 * 24 * 7
+            maxAge: 60 * 60 * 24 * 7,
+            path: '/'
         });
+
+        (await cookies()).set('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 60 * 60 * 24 * 7,
+            path: '/'
+        });
+
+
 
         return NextResponse.json(
             {
@@ -81,7 +109,7 @@ export async function POST(request: NextRequest) {
         console.error("[LOGIN_ERROR]");
         return NextResponse.json(
             {
-                success: true,
+                success: false,
                 message: "Internal Server Error"
             },
             { status: 500 }

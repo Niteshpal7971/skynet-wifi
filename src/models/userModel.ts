@@ -1,13 +1,16 @@
 import mongoose, { Document, Schema, Model } from "mongoose";
 
-interface IUser extends Document {
+export type userRole = 'user' | 'admin'
+
+export interface IUser extends Document {
     userName: string;
     email: string;
     password: string;
+    role: userRole;
     isAdmin: Boolean;
     isVerified: Boolean;
-    verifyToken: string;
-    verifyTokenExpiry: string;
+    verifyToken: string | undefined;
+    verifyTokenExpiry: Date | undefined;
     forgotPasswordToken: string;
     forgotPasswordTokenExpiry: Date;
 }
@@ -15,8 +18,7 @@ interface IUser extends Document {
 const userSchema: Schema<IUser> = new Schema({
     userName: {
         type: String,
-        required: [true, "please provide a userName"],
-        unique: true
+        required: [true, "please provide a userName"]
     },
     email: {
         type: String,
@@ -26,6 +28,11 @@ const userSchema: Schema<IUser> = new Schema({
     password: {
         type: String,
         required: [true, "please Provide a password"]
+    },
+    role: {
+        type: String,
+        enum: ['user', 'admin'],
+        default: 'user',
     },
     isAdmin: {
         type: Boolean,
@@ -40,7 +47,7 @@ const userSchema: Schema<IUser> = new Schema({
         default: null
     },
     verifyTokenExpiry: {
-        type: String,
+        type: Date,
         default: null
     },
     forgotPasswordToken: {
